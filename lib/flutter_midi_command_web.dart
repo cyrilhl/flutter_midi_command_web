@@ -6,10 +6,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_midi_command_platform_interface/flutter_midi_command_platform_interface.dart';
 import 'package:flutter_midi_command_web/extensions.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'package:js_bindings/js_bindings.dart' as html;
+import 'package:typings/core.dart' as js;
+import 'package:typings/core.dart';
 
-final List<html.MIDIInput> _webMidiInputs = [];
-final List<html.MIDIOutput> _webMidiOutputs = [];
+final List<js.MIDIInput> _webMidiInputs = [];
+final List<js.MIDIOutput> _webMidiOutputs = [];
 final List<MidiDevice> _connectedDevices = [];
 
 /// A web implementation of the FlutterMidiCommandWeb plugin.
@@ -20,8 +21,8 @@ class FlutterMidiCommandWeb extends MidiCommandPlatform {
   final StreamController<String> _setupStreamController =
       StreamController<String>.broadcast();
 
-  late final Stream<String> _setupStream;
-  late final Stream<MidiPacket> _rxStream;
+  late Stream<String> _setupStream;
+  late Stream<MidiPacket> _rxStream;
 
   static void registerWith(Registrar registrar) {
     _log("register FlutterMidiCommandWeb");
@@ -34,22 +35,24 @@ class FlutterMidiCommandWeb extends MidiCommandPlatform {
   }
 
   Future<void> _initMidi() async {
-    final access = await html.window.navigator
-        .requestMIDIAccess(html.MIDIOptions(sysex: true, software: false));
+    final access = await js.window.navigator
+        .requestMIDIAccess(js.MIDIOptions(sysex: true, software: false));
 
+    _webMidiInputs.clear();
+    _webMidiOutputs.clear();
     // deal with bug: https://github.com/dart-lang/sdk/issues/33248
     js_util.callMethod(access.inputs, 'forEach', [allowInterop(_getInputs)]);
     js_util.callMethod(access.outputs, 'forEach', [allowInterop(_getOutputs)]);
   }
 
   void _getInputs(dynamic a, dynamic b, dynamic c) {
-    final inp = a as html.MIDIInput;
+    final inp = a as js.MIDIInput;
     _log('input id, name: ${inp.id} | ${inp.name}');
     _webMidiInputs.add(inp);
   }
 
   void _getOutputs(dynamic a, dynamic b, dynamic c) {
-    final outp = a as html.MIDIOutput;
+    final outp = a as js.MIDIOutput;
     _log('ouput id, name: ${outp.id} | ${outp.name}');
     _webMidiOutputs.add(outp);
   }
@@ -88,15 +91,17 @@ class FlutterMidiCommandWeb extends MidiCommandPlatform {
 
   /// Connects to the device.
   @override
-  Future<void> connectToDevice(MidiDevice device,
-      {List<MidiPort>? ports}) async {
+  Future<void> connectToDevice(
+    MidiDevice device, {
+    List<MidiPort>? ports,
+  }) async {
     // connect up incoming webmidi data to our rx stream of MidiPackets
     final inputPorts = _webMidiInputs.where((p) => p.name == device.name);
     for (var inport in inputPorts) {
       _log('connecting midi rx to: ${device.name}');
       inport.onmidimessage = allowInterop((midiMesg) {
         _rxStreamController.add(MidiPacket(
-          (midiMesg as html.MIDIMessageEvent).data,
+          (midiMesg as js.MIDIMessageEvent).data,
           midiMesg.timeStamp.toInt(),
           device,
         ));
@@ -109,19 +114,17 @@ class FlutterMidiCommandWeb extends MidiCommandPlatform {
   /// Disconnects from the device.
   @override
   void disconnectDevice(MidiDevice device, {bool remove = true}) {
+    return;
+    // remove event listener not work in underlay. So skipped
+    /*
     final inputPorts = _webMidiInputs.where((p) => p.name == device.name);
     for (var inport in inputPorts) {
-      _log('connecting midi rx to: ${device.name}');
-      inport.onmidimessage = allowInterop((midiMesg) {
-        _rxStreamController.add(MidiPacket(
-          (midiMesg as html.MIDIMessageEvent).data,
-          midiMesg.timeStamp.toInt(),
-          device,
-        ));
-      });
-      _connectedDevices.remove(device);
-      _setupStreamController.add("deviceDisconnected");
+      _log('disconnecting midi rx to: ${device.name}');
+      inport.onmidimessage = null;
     }
+    _connectedDevices.removeWhere((d) => device.name == d.name);
+    _setupStreamController.add("deviceDisconnected");
+    */
   }
 
   @override
@@ -170,6 +173,6 @@ class FlutterMidiCommandWeb extends MidiCommandPlatform {
 
 void _log(String mesg) {
   if (kDebugMode) {
-    print(mesg);
+    debugPrint(mesg);
   }
 }

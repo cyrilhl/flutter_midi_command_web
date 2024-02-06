@@ -69,7 +69,11 @@ class _MyAppState extends State<MyApp> {
                             child: Text(_deviceLabel(devices[index])),
                             onPressed: () {
                               setState(() {
-                                midiCommand.connectToDevice(devices[index]);
+                                if (!devices[index].connected) {
+                                  midiCommand.connectToDevice(devices[index]);
+                                } else {
+                                  midiCommand.disconnectDevice(devices[index]);
+                                }
                               });
                             },
                           );
