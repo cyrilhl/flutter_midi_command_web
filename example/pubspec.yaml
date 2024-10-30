@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_midi_command: ^0.4.11
+  flutter_midi_command: ^0.4.15
   flutter_midi_command_web:
     path: ../../flutter_midi_command_web
   flutter_virtual_piano: ^0.0.9
@@ -27,7 +27,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.1
+  flutter_lints: ^3.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

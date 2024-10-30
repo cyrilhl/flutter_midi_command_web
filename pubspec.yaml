@@ -18,10 +18,10 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter  
-  typings: ^0.0.6+1
+  typings: ^0.0.6+3
 
 dev_dependencies:
-  flutter_lints: ^3.0.1
+  flutter_lints: ^4.0.0
   flutter_test:
     sdk: flutter
   flutter_midi_command_platform_interface: ^0.4.1

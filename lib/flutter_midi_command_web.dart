@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'dart:js';
-import 'dart:js_util' as js_util;
+import 'dart:js_util';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_midi_command_platform_interface/flutter_midi_command_platform_interface.dart';
@@ -35,14 +34,14 @@ class FlutterMidiCommandWeb extends MidiCommandPlatform {
   }
 
   Future<void> _initMidi() async {
-    final access = await js.window.navigator
+    final access = await js.navigator
         .requestMIDIAccess(js.MIDIOptions(sysex: true, software: false));
 
     _webMidiInputs.clear();
     _webMidiOutputs.clear();
     // deal with bug: https://github.com/dart-lang/sdk/issues/33248
-    js_util.callMethod(access.inputs, 'forEach', [allowInterop(_getInputs)]);
-    js_util.callMethod(access.outputs, 'forEach', [allowInterop(_getOutputs)]);
+    callMethod(access.inputs, 'forEach', [allowInterop(_getInputs)]);
+    callMethod(access.outputs, 'forEach', [allowInterop(_getOutputs)]);
   }
 
   void _getInputs(dynamic a, dynamic b, dynamic c) {
